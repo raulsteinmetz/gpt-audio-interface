@@ -14,7 +14,7 @@ class GPTPrompter:
         )
     
     def get_best_answer(self, answer):
-        return answer.choices[0].message
+        return answer.choices[0].message.content
   
 
 def usage_example():
