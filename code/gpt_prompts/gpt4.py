@@ -1,21 +1,28 @@
+import os
 from openai import OpenAI
+from dotenv import load_dotenv
+import os
 
 class GPTPrompter:
     def __init__(self):
+        load_dotenv()
+        api_key = os.environ.get('OPENAI_API_KEY')
+        if not api_key:
+            raise ValueError("No OpenAI API key found in environment variables")
+        
         self.client = OpenAI(
-          api_key='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'
+          api_key=api_key
         )
-        self.model = 'gpt-3.5-turbo' # for now, plan to change for gpt 4 later
+        self.model = 'gpt-3.5-turbo'  # for now, plan to change for gpt 4 later
 
     def prompt_gpt(self, prompt):
         return self.client.chat.completions.create(
-            model = self.model,
-            messages = prompt
+            model=self.model,
+            messages=prompt
         )
     
     def get_best_answer(self, answer):
         return answer.choices[0].message.content
-  
 
 def usage_example():
     prompter = GPTPrompter()
@@ -30,5 +37,3 @@ def usage_example():
 
 if __name__ == '__main__':
     usage_example()
-
-

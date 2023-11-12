@@ -2,13 +2,13 @@ from gpt_prompts.gpt4 import GPTPrompter
 from text_and_audio.audio_recorder import AudioRecorder
 from text_and_audio.speech_to_text import SpeechToText
 from text_and_audio.text_to_speech import TextToSpeech
+from text_and_audio.audio_player import play_audio
 from time import sleep
 
 
 class ConversationCore:
     def __init__(self):
         self.mem = []
-        self.audio_recorder = AudioRecorder()
         self.tts = TextToSpeech()
         self.stt = SpeechToText()
         self.gpt = GPTPrompter()
@@ -39,16 +39,20 @@ class ConversationCore:
         # TEXT TO SPEECH
         self.tts.build_audio(best_answer, 'gpt.mp3') # getting audio from gpt response
 
+        # PLAY GPT AUDIO
+        play_audio('gpt.mp3')
+
+
 
         while not done:
-
+            audio_recorder = AudioRecorder()
             # USER AUDIO RECORDING
             print('\n\nUser can now speek\n\n')
-            self.audio_recorder.start()
+            audio_recorder.start()
             sleep(10) # for now, 10 seconds for user to speak
-            self.audio_recorder.stop()
+            audio_recorder.stop()
             print('Stopped Recording\n\n')
-            self.audio_recorder.save('user.wav')
+            audio_recorder.save('user.wav')
             
 
             # SPEECH TO TEXT
@@ -59,13 +63,14 @@ class ConversationCore:
             best_answer = self.gpt.get_best_answer(
                 self.gpt.prompt_gpt(self.mem)
             ) # gets gpt best answer based on previous conversaton
-            self.feed_mem(best_answer)
+            self.feed_mem({'role': 'assistant', 'content': best_answer})
 
             # TEXT TO SPEECH
             self.tts.build_audio(best_answer, 'gpt.mp3') # getting audio from gpt response
 
+            # PLAY GPT AUDIO
+            play_audio('gpt.mp3')
 
-            break
 
 
     def start_conversation(self):

@@ -42,7 +42,8 @@ class AudioRecorder:
         self.stream.stop_stream()
         self.stream.close()
         self.audio.terminate()
-        self.frames = []
+
+
 
 
 
