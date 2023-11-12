@@ -1,41 +1,47 @@
 from google.cloud import speech
 import io
 
-def speech_to_text(
-    config: speech.RecognitionConfig,
-    audio: speech.RecognitionAudio,
-) -> speech.RecognizeResponse:
-    client = speech.SpeechClient()
 
-    # Synchronous speech recognition request
-    response = client.recognize(config=config, audio=audio)
 
-    return response
+def load_audio_file(file_name='input.mp3'):
+    with io.open(file_name, "rb") as audio_file:
+        return audio_file.read()
 
-def print_response(response: speech.RecognizeResponse):
-    for result in response.results:
-        print_result(result)
+class SpeechToText:
+    def __init__(self):
+        self.client = speech.SpeechClient()
+        self.config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.MP3,
+            language_code="en-US",  # Adjust the language code if necessary
+            sample_rate_hertz=16000  # Set this to the sample rate of your MP3 file, if known
+        )
 
-def print_result(result: speech.SpeechRecognitionResult):
-    best_alternative = result.alternatives[0]
-    print("-" * 80)
-    print(f"language_code: {result.language_code}")
-    print(f"transcript:    {best_alternative.transcript}")
-    print(f"confidence:    {best_alternative.confidence:.0%}")
+    def get_best_transcription(self, transcription: speech.SpeechRecognitionResult):   
+        return transcription.results[0].alternatives[0].transcript   
 
-# Load the local MP3 file
-file_name = 'output.mp3'  # Path to your MP3 file
-with io.open(file_name, "rb") as audio_file:
-    content = audio_file.read()
+    def get_best_transcription_confidence(self, transcription: speech.SpeechRecognitionResult):
+        return transcription.results[0].alternatives[0].confidence
+    
+    def get_transcription_lc(self, transcription: speech.SpeechRecognitionResult):
+        return transcription.results[0].language_code
 
-config = speech.RecognitionConfig(
-    encoding=speech.RecognitionConfig.AudioEncoding.MP3,
-    language_code="en-US",  # Adjust the language code if necessary
-    sample_rate_hertz=16000  # Set this to the sample rate of your MP3 file, if known
-)
-audio = speech.RecognitionAudio(
-    content=content,
-)
+    def transcribe(self, input_path='input.mp3'):
+        content = load_audio_file(input_path)
+        audio = speech.RecognitionAudio(
+            content=content,
+        )
+        return self.client.recognize(config=self.config, audio=audio)
+    
 
-response = speech_to_text(config, audio)
-print_response(response)
+
+def usage_example():
+    stt = SpeechToText()
+    trsc = stt.transcribe('output.mp3')
+    print(stt.get_best_transcription(trsc))
+    print(stt.get_best_transcription_confidence(trsc))
+    print(stt.get_transcription_lc(trsc))
+    
+
+
+if __name__ == '__main__':
+    usage_example()
